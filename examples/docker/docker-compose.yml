@@ -1,6 +1,6 @@
 services:
-  auto-blog:
-    image: ghcr.io/bhavishyasahdev/auto-blog:latest
+  content8:
+    image: ghcr.io/bhavishyasahdev/content8:latest
     # Or build locally:
     # build:
     #   context: ../..
@@ -13,7 +13,7 @@ services:
       NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET}
     ports:
-      - "3001:3000"   # auto-blog on host port 3001
+      - "3001:3000"   # content8 on host port 3001
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/blog"]
       interval: 30s

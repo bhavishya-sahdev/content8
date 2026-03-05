@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { ComponentPropsWithoutRef, ReactNode } from "react";
 import { checkImageExists } from "@/lib/utils";
 import { generateBlogPostMetadata, sanitizeMDXContent } from "@/lib/blogUtils";
@@ -40,7 +40,7 @@ async function getBlogPost(slug: string) {
       where: (posts, { eq }) => eq(posts.slug, slug),
     });
     if (!post) return null;
-    const readTime = Math.ceil(((post.content?.trim().split(" ").length || 0) / 230));
+    const readTime = Math.ceil((post.content?.trim().split(" ").length || 0) / 230);
     return { ...post, readTime };
   } catch {
     return null;
@@ -56,7 +56,7 @@ async function getRelatedPosts(currentSlug: string, category: string, limit = 3)
     });
     return posts.map((post) => ({
       ...post,
-      readTime: `${Math.ceil(((post.content?.trim().split(" ").length || 0) / 230))} min read`,
+      readTime: `${Math.ceil((post.content?.trim().split(" ").length || 0) / 230)} min read`,
       content: undefined,
     }));
   } catch {
@@ -73,43 +73,40 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 
 const mdxComponents = {
   h1: (props: ComponentPropsWithoutRef<"h1">) => (
-    <h1 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight" {...props} />
+    <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-6 mt-8 leading-tight" {...props} />
   ),
   h2: (props: ComponentPropsWithoutRef<"h2">) => (
-    <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 mt-12 leading-tight" {...props} />
+    <h2 className="text-2xl md:text-3xl font-bold text-zinc-100 mb-4 mt-10 leading-tight" {...props} />
   ),
   h3: (props: ComponentPropsWithoutRef<"h3">) => (
-    <h3 className="text-2xl md:text-3xl font-semibold text-white mb-4 mt-10 leading-tight" {...props} />
+    <h3 className="text-xl md:text-2xl font-semibold text-zinc-100 mb-3 mt-8 leading-tight" {...props} />
   ),
   h4: (props: ComponentPropsWithoutRef<"h4">) => (
-    <h4 className="text-xl md:text-2xl font-semibold text-white mb-4 mt-8 leading-tight" {...props} />
+    <h4 className="text-lg font-semibold text-zinc-100 mb-3 mt-6 leading-tight" {...props} />
   ),
   p: (props: ComponentPropsWithoutRef<"p">) => (
-    <p className="text-gray-300 text-lg leading-relaxed mb-6" {...props} />
+    <p className="text-zinc-300 text-base leading-relaxed mb-5" {...props} />
   ),
   a: (props: ComponentPropsWithoutRef<"a">) => (
     <a
-      className="text-white hover:text-gray-200 underline underline-offset-4 decoration-2 decoration-gray-400 hover:decoration-white transition-colors duration-300"
+      className="text-zinc-100 underline underline-offset-2 decoration-zinc-600 hover:decoration-zinc-300 transition-colors"
       target="_blank"
       rel="noopener noreferrer"
       {...props}
     />
   ),
   ul: (props: ComponentPropsWithoutRef<"ul">) => (
-    <ul className="text-gray-300 text-lg leading-relaxed mb-6 space-y-2 pl-6 list-none" {...props} />
+    <ul className="text-zinc-300 text-base leading-relaxed mb-5 pl-5 list-disc space-y-1.5" {...props} />
   ),
   ol: (props: ComponentPropsWithoutRef<"ol">) => (
-    <ol className="text-gray-300 text-lg leading-relaxed mb-6 space-y-2 pl-6 list-none" {...props} />
+    <ol className="text-zinc-300 text-base leading-relaxed mb-5 pl-5 list-decimal space-y-1.5" {...props} />
   ),
   li: (props: ComponentPropsWithoutRef<"li">) => (
-    <li className="relative" {...props}>
-      <span className="absolute -left-6 top-2 w-2 h-2 bg-gray-400 rounded-full" />
-      {props.children}
-    </li>
+    <li {...props} />
   ),
   blockquote: (props: ComponentPropsWithoutRef<"blockquote">) => (
-    <blockquote className="border-l-4 border-gray-400 pl-6 my-8 bg-gray-900/30 backdrop-blur-sm rounded-r-lg py-4" {...props}>
-      <div className="text-gray-200 text-lg italic">{props.children}</div>
+    <blockquote className="border-l-4 border-zinc-700 pl-5 my-6 py-1" {...props}>
+      <div className="text-zinc-400 italic">{props.children}</div>
     </blockquote>
   ),
   code: ({ className, children, ...props }: CodeProps) => {
@@ -118,7 +115,7 @@ const mdxComponents = {
 
     if (isInline) {
       return (
-        <code className="bg-gray-800/50 text-gray-200 px-2 py-1 rounded text-sm border border-gray-700/50" {...props}>
+        <code className="bg-zinc-800 text-zinc-200 px-1.5 py-0.5 rounded text-[0.875em] font-mono" {...props}>
           {children}
         </code>
       );
@@ -129,16 +126,16 @@ const mdxComponents = {
 
     try {
       return (
-        <div className="my-8 rounded-lg overflow-hidden border border-gray-800/50">
-          <div className="bg-gray-800/50 px-4 py-2 text-sm text-gray-400 border-b border-gray-700/50">
+        <div className="my-6 rounded-lg overflow-hidden border border-zinc-700">
+          <div className="bg-zinc-800 px-4 py-2 text-xs text-zinc-400 border-b border-zinc-700 font-mono">
             {language}
           </div>
           <SyntaxHighlighter
             // @ts-ignore
-            style={oneDark}
+            style={oneLight}
             language={language}
             PreTag="div"
-            className="!bg-gray-900/50 !m-0"
+            className="!m-0 !text-sm"
             {...props}
           >
             {codeString}
@@ -147,12 +144,12 @@ const mdxComponents = {
       );
     } catch {
       return (
-        <div className="my-8 rounded-lg overflow-hidden border border-gray-800/50">
-          <div className="bg-gray-800/50 px-4 py-2 text-sm text-gray-400 border-b border-gray-700/50">
+        <div className="my-6 rounded-lg overflow-hidden border border-zinc-700">
+          <div className="bg-zinc-800 px-4 py-2 text-xs text-zinc-400 border-b border-zinc-700 font-mono">
             {language}
           </div>
-          <pre className="bg-gray-900/50 p-4 overflow-x-auto">
-            <code className="text-gray-200 text-sm">{codeString}</code>
+          <pre className="bg-zinc-900 p-4 overflow-x-auto">
+            <code className="text-zinc-200 text-sm font-mono">{codeString}</code>
           </pre>
         </div>
       );
@@ -164,75 +161,72 @@ const mdxComponents = {
 
     if (!imageExists) {
       return (
-        <div className="my-8 rounded-lg overflow-hidden border border-gray-800/50">
-          <div className="w-full h-48 bg-gray-900/50 flex items-center justify-center">
-            <div className="text-center text-gray-400">
-              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <div className="my-6 rounded-lg overflow-hidden border border-zinc-700">
+          <div className="w-full h-40 bg-zinc-800 flex items-center justify-center">
+            <div className="text-center text-zinc-500">
+              <svg className="w-8 h-8 mx-auto mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="text-sm">Image unavailable</p>
-              {alt && <p className="text-xs text-gray-500 mt-1">{alt}</p>}
+              <p className="text-xs">Image unavailable</p>
+              {alt && <p className="text-xs text-zinc-500 mt-0.5">{alt}</p>}
             </div>
           </div>
-          {alt && (
-            <div className="bg-gray-900/50 px-4 py-2 text-sm text-gray-400 border-t border-gray-800/50">{alt}</div>
-          )}
         </div>
       );
     }
 
     return (
-      <div className="my-8 rounded-lg overflow-hidden border border-gray-800/50">
+      <div className="my-6 rounded-lg overflow-hidden border border-zinc-700">
         <img className="w-full h-auto" src={src} alt={alt} {...props} />
         {alt && (
-          <div className="bg-gray-900/50 px-4 py-2 text-sm text-gray-400 border-t border-gray-800/50">{alt}</div>
+          <div className="bg-zinc-800 px-4 py-2 text-xs text-zinc-400 border-t border-zinc-700">{alt}</div>
         )}
       </div>
     );
   },
   hr: (props: ComponentPropsWithoutRef<"hr">) => (
-    <hr className="my-12 border-0 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent" {...props} />
+    <hr className="my-10 border-zinc-800" {...props} />
   ),
   table: (props: ComponentPropsWithoutRef<"table">) => (
-    <div className="my-8 overflow-x-auto rounded-lg border border-gray-800/50 bg-gray-900/30 backdrop-blur-sm">
-      <table className="min-w-full" {...props} />
+    <div className="my-6 overflow-x-auto rounded-lg border border-zinc-700">
+      <table className="min-w-full text-sm" {...props} />
     </div>
   ),
   thead: (props: ComponentPropsWithoutRef<"thead">) => (
-    <thead className="bg-gray-800/50" {...props} />
+    <thead className="bg-zinc-800" {...props} />
   ),
   th: (props: ComponentPropsWithoutRef<"th">) => (
-    <th className="px-4 py-3 text-left text-sm font-semibold text-white border-b border-gray-700/50" {...props} />
+    <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide border-b border-zinc-700" {...props} />
   ),
   td: (props: ComponentPropsWithoutRef<"td">) => (
-    <td className="px-4 py-3 text-gray-300 border-b border-gray-800/50" {...props} />
+    <td className="px-4 py-3 text-zinc-300 border-b border-zinc-800" {...props} />
   ),
   Callout: ({ type = "info", children }: CalloutProps) => {
     const styles = {
-      info: "border-blue-500/30 bg-blue-500/10 text-blue-200",
-      warning: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200",
-      error: "border-red-500/30 bg-red-500/10 text-red-200",
-      success: "border-green-500/30 bg-green-500/10 text-green-200",
+      info: "border-blue-500/50 bg-blue-500/10 text-blue-300",
+      warning: "border-yellow-500/50 bg-yellow-500/10 text-yellow-300",
+      error: "border-red-500/50 bg-red-500/10 text-red-300",
+      success: "border-green-500/50 bg-green-500/10 text-green-300",
     };
     return (
-      <div className={`border-l-4 pl-6 my-8 backdrop-blur-sm rounded-r-lg py-4 ${styles[type]}`}>
+      <div className={`border-l-4 pl-5 my-6 py-3 rounded-r-lg ${styles[type]}`}>
         {children}
       </div>
     );
   },
   CodeDemo: ({ title, children }: CodeDemoProps) => (
-    <div className="my-8 border border-gray-800/50 rounded-lg overflow-hidden">
+    <div className="my-6 border border-zinc-700 rounded-lg overflow-hidden">
       {title && (
-        <div className="bg-gray-800/50 px-4 py-2 text-sm font-medium text-white border-b border-gray-700/50">
+        <div className="bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-400 border-b border-zinc-700">
           {title}
         </div>
       )}
-      <div className="p-4 bg-gray-900/30">{children}</div>
+      <div className="p-4 bg-zinc-900">{children}</div>
     </div>
   ),
 };
 
-const navItems = [{ href: "/blog", label: "← Back to Blog" }];
+const navItems = [{ href: "/blog", label: "← Blog" }];
 
 export default async function BlogPostPage({ params }: PageParams) {
   const { slug } = await params;
@@ -244,162 +238,127 @@ export default async function BlogPostPage({ params }: PageParams) {
   const relatedPosts = await getRelatedPosts(slug, post.category || "");
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(120,119,198,0.1),transparent_50%)]" />
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-40 right-20 w-48 h-48 bg-gray-400/5 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <BlogHeader items={navItems} />
 
-      <article className="relative">
-        <header className="relative container mx-auto pt-20 pb-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <nav className="flex items-center space-x-2 text-sm text-gray-400 mb-8">
-              <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-              <span>/</span>
-              <span className="text-gray-300">{post.category}</span>
-              <span>/</span>
-              <span className="text-white truncate max-w-xs">{post.title}</span>
-            </nav>
+      <article className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-3xl">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-sm text-zinc-500 mb-8">
+          <Link href="/blog" className="hover:text-zinc-300 transition-colors">Blog</Link>
+          <span>/</span>
+          <span className="text-zinc-400">{post.category}</span>
+        </nav>
 
-            <div className="flex flex-wrap gap-2 mb-6">
-              <span className="text-xs px-3 py-1 bg-white/10 backdrop-blur-sm text-gray-200 rounded-full border border-white/20">
-                {post.category}
-              </span>
-              {post.tags?.map((tag, i) => (
-                <span key={i} className="text-xs px-3 py-1 bg-gray-400/10 backdrop-blur-sm text-gray-300 rounded-full border border-gray-400/20">
-                  {tag}
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mb-5">
+          <span className="text-xs font-medium px-2.5 py-1 bg-zinc-800 text-zinc-400 rounded-full">
+            {post.category}
+          </span>
+          {post.tags?.map((tag, i) => (
+            <span key={i} className="text-xs px-2.5 py-1 bg-zinc-800/60 text-zinc-500 rounded-full">
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Title */}
+        <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-4 leading-tight">
+          {post.title}
+        </h1>
+
+        {/* Description */}
+        {post.description && (
+          <p className="text-lg text-zinc-400 leading-relaxed mb-6">
+            {post.description}
+          </p>
+        )}
+
+        {/* Meta */}
+        <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 pb-8 border-b border-zinc-800 mb-8">
+          <span className="font-medium text-zinc-400">{post.author}</span>
+          <span>·</span>
+          <time dateTime={post.publishedAt || ""}>
+            {new Date(post.publishedAt || "").toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </time>
+          <span>·</span>
+          <span>{post.readTime} min read</span>
+        </div>
+
+        {/* Featured image */}
+        {post.featuredImage && (
+          <img
+            src={post.featuredImage}
+            alt={post.title || "Post"}
+            className="w-full h-auto rounded-lg mb-10 border border-zinc-800"
+          />
+        )}
+
+        {/* Content */}
+        <div className="max-w-none">
+          <MDXRemote source={sanitizedContent || ""} components={mdxComponents} />
+        </div>
+
+        {/* Post footer tags */}
+        {post.tags && post.tags.length > 0 && (
+          <footer className="mt-12 pt-8 border-t border-zinc-800">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-zinc-500">Tags:</span>
+              {post.tags.map((tag, i) => (
+                <span key={i} className="text-xs px-2.5 py-1 bg-zinc-800 text-zinc-400 rounded-full">
+                  #{tag}
                 </span>
               ))}
             </div>
-
-            <img
-              src={post?.featuredImage || `https://placehold.co/1200x630?text=${encodeURIComponent(post.title || "Post")}`}
-              alt={post.title || "Post"}
-              className="w-full h-full object-cover rounded-xl mb-8"
-            />
-
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">{post.title}</h1>
-
-            {post.description && (
-              <p className="text-xl md:text-2xl text-gray-300 leading-relaxed mb-12 max-w-3xl">
-                {post.description}
-              </p>
-            )}
-
-            <div className="flex flex-wrap items-center justify-between gap-6 py-6 border-t border-b border-gray-800/50">
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center text-white font-bold">
-                    {post.author?.charAt(0) || "A"}
-                  </div>
-                  <div>
-                    <p className="font-medium text-white">{post.author}</p>
-                    <p className="text-sm text-gray-400">Author</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 text-sm text-gray-400">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{post.readTime} min read</span>
-                  </div>
-                  <time dateTime={post.publishedAt || ""}>
-                    {new Date(post.publishedAt || "").toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </time>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-          <div className="max-w-4xl mx-auto">
-            <div className="prose prose-lg prose-invert max-w-none">
-              <MDXRemote source={sanitizedContent || ""} components={mdxComponents} />
-            </div>
-
-            <footer className="mt-16 pt-8 border-t border-gray-800/50">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-gray-400">Tags:</span>
-                {post.tags?.map((tag, i) => (
-                  <span key={i} className="text-xs px-3 py-1 bg-gray-800/50 text-gray-300 rounded-full border border-gray-700/50">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </footer>
-          </div>
-        </div>
+          </footer>
+        )}
       </article>
 
+      {/* Related posts */}
       {relatedPosts.length > 0 && (
-        <section className="relative bg-gray-900/20 border-t border-gray-800/50">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Related Articles</h2>
-                <p className="text-gray-400 text-lg">Continue exploring {post.category?.toLowerCase()} topics</p>
-              </div>
+        <section className="border-t border-zinc-800 bg-zinc-900/50">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-5xl">
+            <h2 className="text-xl font-semibold text-zinc-100 mb-8">
+              More in {post.category}
+            </h2>
 
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {relatedPosts.map((related, i) => (
-                  <article key={related.id} className="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl overflow-hidden hover:border-gray-600/50 transition-all duration-500 hover:scale-[1.02]">
-                    <div className="relative aspect-video overflow-hidden">
-                      <img
-                        src={related?.featuredImage || `https://placehold.co/600x400?text=${encodeURIComponent(related.title || "Post")}`}
-                        alt={related.title || "Post"}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute top-4 left-4">
-                        <span className="text-xs px-3 py-1 bg-black/70 backdrop-blur-sm text-white rounded-full border border-white/20">
-                          {related.category}
-                        </span>
-                      </div>
-                    </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {relatedPosts.map((related) => (
+                <article key={related.id} className="group border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors">
+                  <h3 className="text-base font-semibold text-zinc-100 mb-2 line-clamp-2">
+                    <Link href={`/blog/${related.slug}`} className="group-hover:text-zinc-300 transition-colors">
+                      {related.title}
+                    </Link>
+                  </h3>
+                  <p className="text-sm text-zinc-500 line-clamp-2 mb-3">{related.description}</p>
+                  <div className="flex items-center gap-2 text-xs text-zinc-600">
+                    <span>{related.author}</span>
+                    <span>·</span>
+                    <span>{related.readTime}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
 
-                    <div className="relative z-10 p-6 space-y-4">
-                      <h3 className="text-xl font-semibold text-white group-hover:text-gray-200 transition-colors duration-300 line-clamp-2">
-                        <Link href={`/blog/${related.slug}`} className="hover:underline">{related.title}</Link>
-                      </h3>
-                      <p className="text-gray-400 text-sm leading-relaxed line-clamp-3">{related.description}</p>
-                      <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-800/50">
-                        <span className="font-medium text-gray-300">{related.author}</span>
-                        <span>{related.readTime}</span>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <div className="text-center mt-12">
-                <Link href="/blog" className="inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-full font-medium hover:bg-white/20 transition-all duration-300 hover:scale-105">
-                  View All Articles
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
+            <div className="mt-10">
+              <Link
+                href="/blog"
+                className="inline-flex items-center text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors"
+              >
+                ← All articles
+              </Link>
             </div>
           </div>
         </section>
       )}
 
-      <footer className="relative border-t border-gray-800/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog"} — powered by AI & Next.js
+      <footer className="border-t border-zinc-800">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+          <p className="text-sm text-zinc-600">
+            © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_SITE_NAME || "Content8"}
           </p>
         </div>
       </footer>

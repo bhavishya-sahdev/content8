@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog";
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Content8";
 
 export default function Navbar({
   items,

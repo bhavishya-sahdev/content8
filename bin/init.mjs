@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * auto-blog init
+ * content8 init
  * Copies blog routes, schema, and utilities into an existing Next.js project.
  *
  * Usage:
- *   npx auto-blog@latest init
- *   # or, inside the auto-blog repo:
+ *   npx content8@latest init
+ *   # or, inside the content8 repo:
  *   node bin/init.mjs
  */
 
@@ -82,10 +82,10 @@ async function main() {
     rl.question(`  ${c.blue}?${c.reset}  ${q} ${c.dim}(${def})${c.reset} `);
 
   const cwd = process.cwd();
-  // auto-blog's own src/ directory (works both locally and via npx)
+  // content8's own src/ directory (works both locally and via npx)
   const pkgSrc = join(__dirname, "..", "src");
 
-  console.log(`\n${c.bold}${c.cyan}  auto-blog init${c.reset}  ${c.dim}— adds a blog to your existing Next.js project${c.reset}\n`);
+  console.log(`\n${c.bold}${c.cyan}  content8 init${c.reset}  ${c.dim}— adds a blog to your existing Next.js project${c.reset}\n`);
 
   // ── Preflight checks ──────────────────────────────────────────────────────
   const pkg = readPkg(cwd);
@@ -100,10 +100,10 @@ async function main() {
 
   if (!isNext) {
     log.warn("No Next.js config detected.\n");
-    console.log(`  auto-blog requires Next.js for the embedded integration.`);
-    console.log(`  For other stacks, deploy auto-blog as a standalone service and`);
+    console.log(`  content8 requires Next.js for the embedded integration.`);
+    console.log(`  For other stacks, deploy content8 as a standalone service and`);
     console.log(`  proxy ${c.cyan}/blog${c.reset} using one of the configs in ${c.cyan}examples/${c.reset}:`);
-    console.log(`  ${c.gray}https://github.com/bhavishyasahdev/auto-blog/tree/main/examples${c.reset}\n`);
+    console.log(`  ${c.gray}https://github.com/bhavishyasahdev/content8/tree/main/examples${c.reset}\n`);
     rl.close(); process.exit(0);
   }
 
@@ -123,10 +123,10 @@ async function main() {
   log.info(`Layout   : ${hasSrc ? "src/" : "no src/"}`);
   log.info(`Pkg mgr  : ${pm}`);
   log.info(`Drizzle  : ${hasDrizzle ? "yes" : "no"}`);
-  log.info(`Tailwind : ${tailwindVer ?? "not found"}${isTailwindV3 ? c.yellow + "  ← auto-blog uses v4" + c.reset : ""}`);
+  log.info(`Tailwind : ${tailwindVer ?? "not found"}${isTailwindV3 ? c.yellow + "  ← content8 uses v4" + c.reset : ""}`);
 
   if (isTailwindV3) {
-    log.warn("auto-blog uses Tailwind v4. Styles may not render correctly with v3.");
+    log.warn("content8 uses Tailwind v4. Styles may not render correctly with v3.");
     log.warn("Consider upgrading: https://tailwindcss.com/docs/upgrade-guide");
   }
 
@@ -142,7 +142,7 @@ async function main() {
     );
     dbMode = ans.toLowerCase() === "n" ? "full" : "schema-only";
   } else if (hasDrizzle) {
-    log.warn("Drizzle detected but pg is not installed — auto-blog requires PostgreSQL.");
+    log.warn("Drizzle detected but pg is not installed — content8 requires PostgreSQL.");
     const ans = await ask("Continue anyway?", "y/N");
     if (ans.toLowerCase() !== "y") { rl.close(); process.exit(0); }
     dbMode = "schema-only";
@@ -185,7 +185,7 @@ async function main() {
     safeCopy(join(pkgSrc, "lib/utils.ts"),               join(libBase, "utils.ts"),                     "lib/utils.ts");
   } else {
     log.skip("lib/utils.ts — already exists");
-    log.info("Make sure it exports cn() and checkImageExists() — see lib/utils.ts in the auto-blog repo.");
+    log.info("Make sure it exports cn() and checkImageExists() — see lib/utils.ts in the content8 repo.");
   }
 
   // Header
@@ -259,8 +259,8 @@ async function main() {
 
   // ── drizzle.config check ─────────────────────────────────────────────────
   if (!existsSync(join(cwd, "drizzle.config.ts")) && !existsSync(join(cwd, "drizzle.config.js"))) {
-    log.warn("No drizzle.config found. Copy from auto-blog or create your own:");
-    log.code("https://github.com/bhavishyasahdev/auto-blog/blob/main/drizzle.config.ts");
+    log.warn("No drizzle.config found. Copy from content8 or create your own:");
+    log.code("https://github.com/bhavishyasahdev/content8/blob/main/drizzle.config.ts");
   }
 
   // ── Final instructions ────────────────────────────────────────────────────
@@ -291,7 +291,7 @@ async function main() {
   log.code("  -d '{\"data\":{\"meta\":{\"title\":\"Hello\",\"description\":\"Test\",\"category\":\"Test\",\"slug\":\"hello\",\"tags\":[],\"keywords\":[]},\"content\":\"# Hello\\n\\nThis works.\"}}'");
 
   console.log(`\n  ${c.bold}5. Visit /blog${c.reset}`);
-  console.log(`\n  ${c.dim}Full docs: https://github.com/bhavishyasahdev/auto-blog${c.reset}\n`);
+  console.log(`\n  ${c.dim}Full docs: https://github.com/bhavishyasahdev/content8${c.reset}\n`);
 }
 
 function section(msg) {

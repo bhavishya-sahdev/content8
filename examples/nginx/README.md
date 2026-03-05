@@ -1,15 +1,15 @@
 # Nginx Reverse Proxy
 
-Serves both your main app and auto-blog from the same domain using nginx.
+Serves both your main app and content8 from the same domain using nginx.
 
 ## Setup
 
-1. Deploy auto-blog (see [docker example](../docker/)) or run it separately on port 3001.
+1. Deploy content8 (see [docker example](../docker/)) or run it separately on port 3001.
 
 2. Update `nginx.conf`:
    - Replace `yourproject.com` with your domain.
    - Replace `main-app:3000` with your main app's host:port.
-   - Replace `auto-blog:3000` with auto-blog's host:port.
+   - Replace `content8:3000` with content8's host:port.
 
 3. Place in `/etc/nginx/sites-available/yourproject.com` and enable:
    ```bash

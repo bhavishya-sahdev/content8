@@ -36,7 +36,7 @@ export function generateBlogPostMetadata({
       : "A technical blog post.");
 
   return {
-    title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog"}`,
+    title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || "Content8"}`,
     description: metaDescription,
     keywords: [...tags, "blog", "technical", "programming"],
     authors: [{ name: author }],
@@ -44,7 +44,7 @@ export function generateBlogPostMetadata({
       title,
       description: metaDescription,
       url: postUrl,
-      siteName: process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog",
+      siteName: process.env.NEXT_PUBLIC_SITE_NAME || "Content8",
       images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
       type: "article",
       publishedTime: publishedAt,
@@ -123,7 +123,7 @@ export function generateBlogPostJsonLd({
     isPartOf: {
       "@type": "Blog",
       "@id": `${baseUrl}/blog`,
-      name: process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog",
+      name: process.env.NEXT_PUBLIC_SITE_NAME || "Content8",
     },
   };
 }
@@ -153,28 +153,28 @@ export function sanitizeMDXContent(content: string): string {
           const separatorRow = `| ${sepCells.join(" | ")} |`;
           const valueRow = `| ${valueCells.join(" | ")} |`;
           return `\n${headerRow}\n${separatorRow}\n${valueRow}\n`;
-        }
+        },
       )
 
       .replace(
         /\|([^|]+)\|\|(-+)\|\|([^|]+)\|/g,
         (match, header, separator, value) => {
           return `\n| ${header.trim()} |\n|---|\n| ${value.trim()} |\n`;
-        }
+        },
       )
 
       .replace(
         /\|([^|]+)\|(-{3,})\|\|([^|]+)\|/g,
         (match, header, separator, value) => {
           return `\n| ${header.trim()} |\n|---|\n| ${value.trim()} |\n`;
-        }
+        },
       )
 
       .replace(
         /\|([^|]+)\|(-{3,})\|([^|]+)\|(?!\|)/g,
         (match, header, separator, value) => {
           return `\n| ${header.trim()} |\n|---|\n| ${value.trim()} |\n`;
-        }
+        },
       )
 
       .replace(
@@ -206,7 +206,7 @@ export function sanitizeMDXContent(content: string): string {
             }
           }
           return result;
-        }
+        },
       )
 
       .replace(/\|([^|]+)\|/g, (match, content, offset, string) => {
@@ -216,9 +216,17 @@ export function sanitizeMDXContent(content: string): string {
         if (codeBlockCount % 2 === 1 || inlineCodeCount % 2 === 1) return match;
         const lineStart = string.lastIndexOf("\n", offset) + 1;
         const lineEnd = string.indexOf("\n", offset);
-        const currentLine = string.substring(lineStart, lineEnd === -1 ? string.length : lineEnd);
-        if (currentLine.trim().startsWith("|") && currentLine.trim().endsWith("|")) return match;
-        if (content.includes("-") && content.match(/^-+$/)) return `|${content}|`;
+        const currentLine = string.substring(
+          lineStart,
+          lineEnd === -1 ? string.length : lineEnd,
+        );
+        if (
+          currentLine.trim().startsWith("|") &&
+          currentLine.trim().endsWith("|")
+        )
+          return match;
+        if (content.includes("-") && content.match(/^-+$/))
+          return `|${content}|`;
         return match;
       })
 
@@ -228,13 +236,27 @@ export function sanitizeMDXContent(content: string): string {
         const inlineCodeCount = (beforeMatch.match(/`/g) || []).length;
         if (codeBlockCount % 2 === 1 || inlineCodeCount % 2 === 1) return match;
         if (
-          inner.includes("=") || inner.includes(":") || inner.includes('"') ||
-          inner.includes("'") || inner.includes("=>") || inner.includes("()") ||
-          inner.includes("[]") || inner.includes("?") || inner.includes("&&") ||
-          inner.includes("||") || inner.includes("return") || inner.includes("useState") ||
-          inner.includes("useEffect") || inner.includes("map") || inner.includes("filter") ||
-          inner.includes("item.") || inner.includes("props.") || inner.includes("state.") ||
-          /^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(inner.trim())
+          inner.includes("=") ||
+          inner.includes(":") ||
+          inner.includes('"') ||
+          inner.includes("'") ||
+          inner.includes("=>") ||
+          inner.includes("()") ||
+          inner.includes("[]") ||
+          inner.includes("?") ||
+          inner.includes("&&") ||
+          inner.includes("||") ||
+          inner.includes("return") ||
+          inner.includes("useState") ||
+          inner.includes("useEffect") ||
+          inner.includes("map") ||
+          inner.includes("filter") ||
+          inner.includes("item.") ||
+          inner.includes("props.") ||
+          inner.includes("state.") ||
+          /^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(
+            inner.trim(),
+          )
         ) {
           return match;
         }
@@ -269,8 +291,12 @@ export function sanitizeMDXContent(content: string): string {
         const codeBlockCount = (beforeMatch.match(/```/g) || []).length;
         if (codeBlockCount % 2 === 1) return match;
         const inner = p1 + "\n" + p2;
-        if (!inner.includes("return") && !inner.includes("=>") &&
-            !inner.includes("useState") && !inner.includes("useEffect")) {
+        if (
+          !inner.includes("return") &&
+          !inner.includes("=>") &&
+          !inner.includes("useState") &&
+          !inner.includes("useEffect")
+        ) {
           return match.replace(/\{/g, "\\{").replace(/\}/g, "\\}");
         }
         return match;

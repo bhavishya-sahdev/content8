@@ -5,7 +5,7 @@ Caddy handles HTTPS automatically (Let's Encrypt). This is the simplest self-hos
 ## Setup
 
 1. Replace `yourproject.com` with your domain.
-2. Replace `main-app:3000` and `auto-blog:3000` with your service host:port values.
+2. Replace `main-app:3000` and `content8:3000` with your service host:port values.
 3. Run Caddy:
 
 ```bash

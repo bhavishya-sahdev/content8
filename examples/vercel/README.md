@@ -1,16 +1,16 @@
 # Vercel Reverse Proxy
 
-Serve auto-blog from `/blog` on your **main app's domain** without touching your existing deployment.
+Serve content8 from `/blog` on your **main app's domain** without touching your existing deployment.
 
 ## Setup
 
-1. Deploy auto-blog to Vercel (separate project):
+1. Deploy content8 to Vercel (separate project):
 
-   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/bhavishyasahdev/auto-blog)
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/bhavishyasahdev/content8)
 
 2. Copy `vercel.json` to your **main project root**.
 
-3. Replace `YOUR-AUTO-BLOG.vercel.app` with your auto-blog deployment URL.
+3. Replace `YOUR-AUTO-BLOG.vercel.app` with your content8 deployment URL.
 
 4. Push — Vercel picks up the rewrites automatically.
 
@@ -22,5 +22,5 @@ Vercel rewrites proxy the request server-side, so the user sees `yourproject.com
 
 ## Notes
 
-- The `/api/blog` rewrite lets your n8n pipeline POST to `yourproject.com/api/blog` instead of the auto-blog URL directly.
-- If your main app already has `/api/blog` routes, remove that rewrite and point n8n directly at the auto-blog URL.
+- The `/api/blog` rewrite lets your n8n pipeline POST to `yourproject.com/api/blog` instead of the content8 URL directly.
+- If your main app already has `/api/blog` routes, remove that rewrite and point n8n directly at the content8 URL.

@@ -12,7 +12,7 @@
 
 import Link from "next/link";
 
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Blog";
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Content8";
 
 export default function BlogHeader({
   items,
@@ -20,9 +20,9 @@ export default function BlogHeader({
   items: { href: string; label: string }[];
 }) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-800/50 bg-black/80 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center gap-8 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="font-bold text-xl text-white shrink-0">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
+      <div className="container mx-auto flex h-14 items-center gap-8 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="font-semibold text-zinc-100 shrink-0 tracking-tight">
           {SITE_NAME}
         </Link>
         <nav className="flex items-center gap-6 text-sm">
@@ -30,7 +30,7 @@ export default function BlogHeader({
             <Link
               key={item.href}
               href={item.href}
-              className="text-gray-300 hover:text-white transition-colors"
+              className="text-zinc-400 hover:text-zinc-100 transition-colors"
             >
               {item.label}
             </Link>

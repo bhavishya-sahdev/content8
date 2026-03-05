@@ -1,9 +1,9 @@
 {
-  "name": "auto-blog",
+  "name": "content8",
   "version": "0.1.0",
   "private": false,
   "bin": {
-    "auto-blog": "./bin/init.mjs"
+    "content8": "./bin/init.mjs"
   },
   "files": [
     "bin",
@@ -15,6 +15,7 @@
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "bun run scripts/seed.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

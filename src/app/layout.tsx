@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog";
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Content8";
 
 export const metadata: Metadata = {
   title: SITE_NAME,
@@ -24,7 +24,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-zinc-100`}>
         {children}
       </body>
     </html>

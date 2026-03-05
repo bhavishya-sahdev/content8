@@ -4,7 +4,7 @@ import { db } from "@/db";
 export const revalidate = 3600;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog";
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Content8";
 
 async function getBlogs() {
   try {
@@ -39,7 +39,10 @@ export async function GET() {
         description: post.description || "",
         url: postUrl,
         guid: postUrl,
-        categories: [...(post.category ? [post.category] : []), ...(post.tags || [])],
+        categories: [
+          ...(post.category ? [post.category] : []),
+          ...(post.tags || []),
+        ],
         author: post.author || "Author",
         date: new Date(post.publishedAt),
         enclosure: post.featuredImage

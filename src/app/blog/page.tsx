@@ -3,10 +3,10 @@ import { db } from "@/db";
 import { Metadata } from "next";
 import Link from "next/link";
 
-const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Auto Blog";
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Content8";
 
 export const metadata: Metadata = {
-  title: `${SITE_NAME} | Technical Insights`,
+  title: `${SITE_NAME} | Blog`,
   description: "An automated technical blog powered by AI.",
   robots: { index: true, follow: true },
 };
@@ -21,7 +21,7 @@ async function getBlogs() {
     return {
       data: res.map((post) => ({
         ...post,
-        readTime: Math.ceil(((post.content?.trim().split(" ").length || 0) / 230)),
+        readTime: Math.ceil((post.content?.trim().split(" ").length || 0) / 230),
         content: undefined,
       })),
     };
@@ -40,193 +40,122 @@ export default async function BlogPage() {
   const { data: blogs } = await getBlogs();
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(120,119,198,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,107,107,0.1),transparent_50%)]" />
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-40 right-20 w-48 h-48 bg-gray-400/5 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <BlogHeader items={navItems} />
 
-      {/* Hero */}
-      <section className="relative container mx-auto pt-20 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-8">
-          <div className="inline-flex items-center rounded-full border border-gray-400/20 bg-gray-400/10 px-4 py-2 text-sm text-white backdrop-blur-sm">
-            <div className="mr-2 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            AI-powered content, updated automatically
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter">
-            <span className="block text-white">{SITE_NAME}</span>
-            <span className="block bg-gradient-to-r from-gray-200 via-gray-400 to-gray-600 bg-clip-text text-transparent">
-              Chronicles
-            </span>
-          </h1>
-
-          <p className="max-w-2xl mx-auto text-gray-400 text-xl leading-relaxed">
-            Automated technical articles sourced from developer communities, refined by AI, delivered fresh.
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-5xl">
+        <header className="mb-14">
+          <h1 className="text-4xl font-bold tracking-tight text-zinc-100">{SITE_NAME}</h1>
+          <p className="mt-3 text-zinc-400">
+            Automated technical articles, updated continuously.
           </p>
-        </div>
-      </section>
+        </header>
 
-      {/* Content */}
-      {blogs.length > 0 ? (
-        <main className="relative container mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-          {/* Featured Post */}
-          <section className="mb-20">
-            <div className="group relative overflow-hidden rounded-3xl bg-gray-900/30 border border-gray-800/50 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-700">
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/50 to-transparent z-10" />
+        {blogs.length === 0 ? (
+          <div className="py-24 text-center text-zinc-500">
+            <p>No posts yet.</p>
+            <p className="mt-2 text-sm">
+              Send a POST request to{" "}
+              <code className="bg-zinc-800 px-2 py-0.5 rounded text-zinc-300">/api/blog</code>{" "}
+              to publish the first article.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Featured post */}
+            <article className="mb-16 pb-16 border-b border-zinc-800">
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="text-xs font-medium px-2.5 py-1 bg-zinc-800 text-zinc-400 rounded-full">
+                  {blogs[0].category}
+                </span>
+                {blogs[0].tags?.slice(0, 3).map((tag, i) => (
+                  <span key={i} className="text-xs px-2.5 py-1 bg-zinc-800/60 text-zinc-500 rounded-full">
+                    {tag}
+                  </span>
+                ))}
+              </div>
 
-              <div className="grid lg:grid-cols-2 gap-0">
-                <div className="relative z-20 p-8 lg:p-12 flex flex-col justify-center space-y-6">
-                  <div className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs text-white w-fit">
-                    Featured Post
-                  </div>
+              <h2 className="text-3xl font-bold text-zinc-100 mb-3 leading-snug">
+                <Link href={`/blog/${blogs[0].slug}`} className="hover:text-zinc-300 transition-colors">
+                  {blogs[0].title}
+                </Link>
+              </h2>
 
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {blogs[0]?.tags?.map((tag, i) => (
-                        <span key={i} className="text-xs px-3 py-1 bg-white/10 backdrop-blur-sm text-gray-200 rounded-full border border-white/20">
-                          {tag}
-                        </span>
-                      ))}
+              <p className="text-zinc-400 text-lg leading-relaxed mb-5 max-w-2xl">
+                {blogs[0].description}
+              </p>
+
+              <div className="flex items-center gap-4 text-sm text-zinc-500 mb-6">
+                <span className="font-medium text-zinc-400">{blogs[0].author}</span>
+                <span>·</span>
+                <time dateTime={blogs[0].publishedAt || ""}>
+                  {new Date(blogs[0].publishedAt || "").toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </time>
+                <span>·</span>
+                <span>{blogs[0].readTime} min read</span>
+              </div>
+
+              <Link
+                href={`/blog/${blogs[0].slug}`}
+                className="inline-flex items-center px-4 py-2 bg-zinc-100 text-zinc-900 text-sm font-medium rounded-md hover:bg-white transition-colors"
+              >
+                Read article
+                <svg className="ml-1.5 w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </article>
+
+            {/* Post grid */}
+            {blogs.length > 1 && (
+              <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+                {blogs.slice(1).map((blog) => (
+                  <article key={blog.id} className="group border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors">
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      <span className="text-xs font-medium px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded-full">
+                        {blog.category}
+                      </span>
                     </div>
 
-                    <h2 className="text-3xl lg:text-4xl font-bold text-white">
-                      <Link href={`/blog/${blogs[0]?.slug}`} className="hover:underline">
-                        {blogs[0]?.title}
+                    <h3 className="text-base font-semibold text-zinc-100 mb-2 leading-snug line-clamp-2">
+                      <Link href={`/blog/${blog.slug}`} className="group-hover:text-zinc-300 transition-colors">
+                        {blog.title}
                       </Link>
-                    </h2>
+                    </h3>
 
-                    <p className="text-gray-300 text-lg leading-relaxed">{blogs[0]?.description}</p>
-                  </div>
+                    <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3 mb-4">
+                      {blog.description}
+                    </p>
 
-                  <div className="flex items-center justify-between text-sm text-gray-400">
-                    <div className="flex items-center gap-6">
-                      <span className="font-medium text-gray-200">{blogs[0]?.author}</span>
-                      <span>{blogs[0]?.readTime} min read</span>
-                    </div>
-                    <time dateTime={blogs[0]?.publishedAt || ""}>
-                      {new Date(blogs[0]?.publishedAt || "").toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </time>
-                  </div>
-
-                  <Link
-                    href={`/blog/${blogs[0]?.slug}`}
-                    className="inline-flex items-center px-6 py-3 bg-white text-black rounded-full font-medium hover:bg-gray-200 transition-all duration-300 hover:scale-105 w-fit"
-                  >
-                    Read Full Article
-                    <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </div>
-
-                <div className="relative overflow-hidden rounded-r-3xl lg:rounded-l-none">
-                  <img
-                    src={blogs[0]?.featuredImage || `https://placehold.co/600x400?text=${encodeURIComponent(blogs[0]?.title || "Featured")}`}
-                    alt={blogs[0]?.title || "Featured post"}
-                    className="w-full h-64 lg:h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Recent Posts Grid */}
-          {blogs.length > 1 && (
-            <section>
-              <div className="flex items-center justify-between mb-12">
-                <h3 className="text-3xl font-bold text-white">Recent Posts</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-sm text-gray-400">Updated automatically</span>
-                </div>
-              </div>
-
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {blogs.slice(1).map((blog, index) => (
-                  <article
-                    key={blog.id}
-                    className="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl overflow-hidden hover:border-gray-600/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-gray-500/10"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-gray-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                    <div className="relative aspect-video overflow-hidden">
-                      <img
-                        src={blog?.featuredImage || `https://placehold.co/600x400?text=${encodeURIComponent(blog?.title || "Post")}`}
-                        alt={blog?.title || "Post"}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute top-4 left-4">
-                        <span className="text-xs px-3 py-1 bg-black/70 backdrop-blur-sm text-white rounded-full border border-white/20">
-                          {blog.category}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="relative z-10 p-6 space-y-4">
-                      <div className="flex flex-wrap gap-2">
-                        {blog.tags?.slice(0, 3).map((tag, i) => (
-                          <span key={i} className="text-xs px-2 py-1 bg-white/10 backdrop-blur-sm text-gray-300 rounded-full border border-white/10">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      <h3 className="text-xl font-semibold text-white group-hover:text-gray-200 transition-colors duration-300 line-clamp-2">
-                        <Link href={`/blog/${blog.slug}`} className="hover:underline">
-                          {blog.title}
-                        </Link>
-                      </h3>
-
-                      <p className="text-gray-400 text-sm leading-relaxed line-clamp-3">{blog.description}</p>
-
-                      <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-800/50">
-                        <div className="flex items-center gap-4">
-                          <span className="font-medium text-gray-300">{blog.author}</span>
-                          <span>{blog.readTime} min read</span>
-                        </div>
-                        <time dateTime={blog.publishedAt || ""}>
-                          {new Date(blog.publishedAt || "").toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </time>
-                      </div>
+                    <div className="flex items-center gap-3 text-xs text-zinc-600">
+                      <span className="font-medium text-zinc-500">{blog.author}</span>
+                      <span>·</span>
+                      <time dateTime={blog.publishedAt || ""}>
+                        {new Date(blog.publishedAt || "").toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </time>
+                      <span>·</span>
+                      <span>{blog.readTime} min</span>
                     </div>
                   </article>
                 ))}
               </div>
-            </section>
-          )}
-        </main>
-      ) : (
-        <main className="relative container mx-auto px-4 sm:px-6 lg:px-8 pb-24 text-center">
-          <div className="py-24 space-y-4">
-            <p className="text-gray-400 text-lg">No posts yet.</p>
-            <p className="text-gray-500 text-sm">
-              Send a POST request to <code className="bg-gray-800 px-2 py-1 rounded">/api/blog</code> to publish the first article.
-            </p>
-          </div>
-        </main>
-      )}
+            )}
+          </>
+        )}
+      </main>
 
-      <footer className="relative border-t border-gray-800/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} {SITE_NAME} — powered by AI & Next.js
+      <footer className="border-t border-zinc-800">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+          <p className="text-sm text-zinc-600">
+            © {new Date().getFullYear()} {SITE_NAME}
           </p>
         </div>
       </footer>

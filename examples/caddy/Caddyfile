@@ -1,11 +1,11 @@
 yourproject.com {
-    # auto-blog — /blog and /api/blog route to the blog service
+    # content8 — /blog and /api/blog route to the blog service
     handle /blog* {
-        reverse_proxy auto-blog:3000
+        reverse_proxy content8:3000
     }
 
     handle /api/blog* {
-        reverse_proxy auto-blog:3000
+        reverse_proxy content8:3000
     }
 
     # Everything else goes to your main app
