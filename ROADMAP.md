@@ -1,135 +1,201 @@
-# Auto Blog — MVP Roadmap
+# auto-blog — Roadmap
 
-An automated blog engine that ingests AI-generated content via webhook and serves it as a polished, SEO-optimized publication.
+> Target: developers with projects who want organic traffic and AI discoverability without becoming content marketers.
+
+**Core loop:** project context → AI writes about it → posts auto-publish → Google + AI assistants find it.
 
 ---
 
-## Phase 0 — Baseline (Done ✓)
+## Phase 0 — Baseline ✓ (Done)
 
-Ported core feature from portfolio-v4 into a standalone repo.
+Extracted automated blog feature from portfolio-v4 into a standalone, open-sourceable repo.
 
 - [x] Next.js 15 App Router + TypeScript + Tailwind v4
-- [x] PostgreSQL schema (`posts` table) with Drizzle ORM
-- [x] `POST /api/blog` webhook endpoint (receives n8n-generated posts)
-- [x] `GET /api/blog` endpoint (returns latest posts)
-- [x] Blog listing page (`/blog`) — featured post + grid
-- [x] Individual post page (`/blog/[slug]`) — MDX rendering, related posts
-- [x] MDX content sanitizer (fixes escaped chars, malformed tables, JSX conflicts)
-- [x] RSS feed (`/blog/rss.xml`)
-- [x] SEO utilities (Open Graph, Twitter cards, JSON-LD)
-- [x] Sitemap generation
-- [x] Environment-variable-driven config (no hardcoded personal info)
-- [x] Optional webhook secret validation
+- [x] PostgreSQL schema (`posts` table) + Drizzle ORM + migrations
+- [x] `POST /api/blog` — webhook endpoint with optional secret validation
+- [x] `GET /api/blog` — latest posts (no content body)
+- [x] `/blog` — listing page (featured post + card grid, ISR 1h)
+- [x] `/blog/[slug]` — MDX post page (syntax highlighting, related posts, SEO meta)
+- [x] MDX sanitizer — handles escaped chars, malformed tables, JSX conflicts from AI output
+- [x] RSS feed — `/blog/rss.xml` (50 posts, 1h cache)
+- [x] SEO utilities — Open Graph, Twitter cards, JSON-LD structured data
+- [x] XML sitemap — `/blog/sitemap.xml`
+- [x] All personal info replaced with env vars — generic for any deployer
+- [x] README + ROADMAP targeting dev-project SEO use case
 
 ---
 
-## Phase 1 — Production-Ready MVP
+## Phase 1 — Developer-Project Aware
 
-Make this deployable and independently usable by anyone.
+Make the engine understand *what project it's serving* so content is targeted, not generic.
 
-### 1.1 Auth & Security
-- [ ] Validate webhook requests with HMAC signature (not just a static secret)
-- [ ] Rate limiting on `POST /api/blog` (e.g. Upstash Ratelimit or middleware)
-- [ ] Admin panel behind auth to view/delete/edit posts (better-auth or Clerk)
+### 1.1 Project Context
 
-### 1.2 Content Quality
-- [ ] Post validation schema (Zod) on the webhook endpoint — reject malformed payloads early
-- [ ] Duplicate detection by content hash (beyond slug uniqueness)
-- [ ] Draft/published status field on posts table — queue posts before publishing
-- [ ] Scheduled publishing: `publishAt` timestamp, cron job to flip status
+The key insight: AI-generated content must be grounded in *your* project to rank for your project's keywords and get recommended by AI assistants.
 
-### 1.3 UX & Discovery
-- [ ] Tag/category filter pages (`/blog/tag/[tag]`, `/blog/category/[cat]`)
-- [ ] Full-text search (PostgreSQL `tsvector` or Algolia)
-- [ ] Pagination / infinite scroll on listing page
-- [ ] Reading progress bar on post page
-- [ ] Estimated read time displayed in listing cards (already computed, just surfaced better)
+- [ ] `project.config.ts` — project identity file (name, URL, description, tech stack, target keywords, GitHub URL, competitors list)
+- [ ] Inject project context into a `/api/blog` system prompt endpoint — n8n/pipelines can fetch this to prime their AI agent
+- [ ] `author` field defaulted from project config, not hardcoded
+- [ ] Category seed list in config — guides the AI on what content types to generate
 
-### 1.4 SEO & Performance
-- [ ] `generateStaticParams` for popular slugs (SSG for top posts)
-- [ ] Open Graph image generation (`/api/og?slug=...` using `@vercel/og`)
-- [ ] Canonical URLs
-- [ ] Structured data (JSON-LD) rendered in `<head>` of post pages
+### 1.2 `llms.txt` — AI Discoverability
 
----
+The emerging standard ([llmstxt.org](https://llmstxt.org)). Generates an AI-readable index of your project that Perplexity, ChatGPT, and Claude can ingest when users ask about tools in your space.
 
-## Phase 2 — Multi-Source Automation
+- [ ] `GET /llms.txt` — auto-generated from posts, project config, and site metadata
+  ```
+  # MyTool
+  > One-line description from project config
 
-Move beyond a single n8n pipeline and support multiple content sources.
+  ## Docs
+  - [Getting started](...)
 
-### 2.1 Source Registry
-- [ ] `sources` table — track where each post came from (subreddit, HN, RSS feed, etc.)
-- [ ] `POST /api/blog` accepts `source` field, stored per-post
-- [ ] Source page: `/blog/source/[source]` — filter by origin
+  ## Tutorials
+  - [Recent post title](...)
 
-### 2.2 Native Ingestion Pipelines
-Replace dependency on external n8n:
-- [ ] Built-in Reddit scraper (cron + Reddit API) — configurable subreddits via env
-- [ ] HackerNews top stories pipeline
-- [ ] RSS/Atom feed reader as a content source
-- [ ] Each pipeline → same internal queue → same AI writer → same webhook
+  ## Comparisons
+  - [MyTool vs X](...)
+  ```
+- [ ] `GET /llms-full.txt` — same but with post descriptions included (for deeper AI ingestion)
+- [ ] Both revalidate on new post publication
 
-### 2.3 AI Writer Integration
-- [ ] Built-in AI writer using Claude API (`claude-sonnet-4-6`)
-- [ ] Configurable prompt templates per source type
-- [ ] Content quality scoring — auto-discard posts below threshold
-- [ ] Keyword targeting: bias generation toward specific topics
+### 1.3 Structured Data for AEO
+
+Answer Engine Optimization — makes your content land in AI Overviews and featured snippets.
+
+- [ ] `SoftwareApplication` JSON-LD schema in site `<head>` (from project config)
+- [ ] `FAQPage` JSON-LD on posts that include a `## FAQ` section
+- [ ] `HowTo` JSON-LD on tutorial-category posts
+- [ ] `BreadcrumbList` on all post pages
+
+### 1.4 Webhook Hardening
+
+- [ ] Zod validation on `POST /api/blog` payload — reject malformed posts early with clear errors
+- [ ] `draft` status field on `posts` table — queue posts without publishing
+- [ ] `published_at` override — accept a future timestamp to schedule posts
+- [ ] Idempotency key support — retry-safe ingestion from n8n
 
 ---
 
-## Phase 3 — Analytics & Monetization
+## Phase 2 — GitHub-Native Content Sources
 
-Turn the blog into a product.
+Pull content directly from your project's GitHub activity so the pipeline has real, accurate context.
 
-### 3.1 Analytics
-- [ ] Page view tracking (privacy-first, no cookies — simple server-side counter)
-- [ ] `post_views` table — increment on each visit
-- [ ] Admin dashboard: top posts by views, posts per day, category breakdown
-- [ ] Trending posts widget on listing page
+### 2.1 GitHub Integration
 
-### 3.2 Email Newsletter
-- [ ] Subscriber signup form + `subscribers` table
-- [ ] Weekly digest email — top 5 posts — sent via Resend
-- [ ] Unsubscribe flow with token-based auth
-- [ ] Welcome email on subscribe
+- [ ] GitHub App / OAuth — connect a repo to auto-blog
+- [ ] **Releases → posts**: new GitHub release triggers a "What's new in v{version}" post
+- [ ] **README as context source**: `/api/context/github` fetches and caches your repo's README for AI pipelines to reference
+- [ ] **Issue labels as content signals**: issues tagged `blog-idea` feed into a content queue
 
-### 3.3 Comments
-- [ ] Giscus (GitHub Discussions) or built-in comment table
-- [ ] Comment moderation queue in admin panel
+### 2.2 Built-in Content Queue
 
-### 3.4 Monetization Hooks
-- [ ] Sponsored post flag on `posts` table
-- [ ] `noindex` toggle per post
-- [ ] Affiliate link injection utility
+- [ ] `content_queue` table — staged post ideas before AI expansion
+- [ ] Admin UI to view, approve, reject queued ideas
+- [ ] Priority field — bump important posts
+
+### 2.3 Changelog Automation
+
+- [ ] Parse `CHANGELOG.md` from GitHub — convert each version entry into a scheduled blog post
+- [ ] Detect semver bump type (major/minor/patch) and adjust post length accordingly
+- [ ] Tag changelog posts automatically
 
 ---
 
-## Phase 4 — White-Label & Multi-Tenant
+## Phase 3 — Content Strategy Engine
 
-Make this a platform others can deploy.
+Move from "publish AI content" to "publish strategically targeted AI content."
 
-- [ ] Multi-tenant: each tenant has their own `blog_id` namespace
-- [ ] Custom domain support per tenant
-- [ ] Tenant-specific AI prompts and source configs
-- [ ] Billing integration (Stripe) — usage-based on posts generated
-- [ ] Admin SaaS dashboard
+### 3.1 Content Type Templates
+
+High-converting content types for developer tools, built as structured prompt templates:
+
+- [ ] **Comparison posts** — "MyTool vs {Competitor}" — pulls from competitors list in project config
+- [ ] **Use-case posts** — "How {persona} uses MyTool to {outcome}"
+- [ ] **Tutorial posts** — "How to do {X} with MyTool" — sourced from docs/README sections
+- [ ] **Integration posts** — "Using MyTool with {popular tool}"
+- [ ] Template management UI — customize prompts per content type
+
+### 3.2 Keyword Targeting
+
+- [ ] `target_keywords` array in project config
+- [ ] Each generated post tagged with its primary keyword
+- [ ] Keyword coverage dashboard — which terms are covered, which are missing
+- [ ] Prevent keyword cannibalization — warn when two posts target the same keyword
+
+### 3.3 Native AI Writer
+
+Reduce dependency on n8n by building the AI writer into auto-blog itself:
+
+- [ ] `POST /api/generate` — accepts content type + context, returns a draft post using **Claude (`claude-sonnet-4-6`)**
+- [ ] Configurable prompt templates per content type
+- [ ] Content quality scorer — auto-discard posts below a confidence threshold
+- [ ] Cron-triggered generation — fully automated, zero manual intervention
 
 ---
 
-## Tech Decisions Log
+## Phase 4 — Distribution & Analytics
+
+Turn traffic into a feedback loop.
+
+### 4.1 Analytics
+
+Privacy-first, no cookies, no third-party scripts:
+
+- [ ] `post_views` table — server-side view counter (increment on page load)
+- [ ] `/admin/analytics` — top posts by views, posts per day, category breakdown, keyword coverage
+- [ ] Trending posts widget on listing page (by views in last 7 days)
+- [ ] Posts published vs organic traffic chart (link to Google Search Console API)
+
+### 4.2 Email Newsletter
+
+- [ ] `subscribers` table + signup form on blog listing page
+- [ ] Weekly digest — top 5 posts — sent via **Resend**
+- [ ] Unsubscribe flow with signed token
+- [ ] Welcome email with project intro on subscribe
+- [ ] Admin UI to view subscriber count + digest preview
+
+### 4.3 Social Distribution
+
+- [ ] Auto-post to X/Twitter on publish (via API)
+- [ ] Auto-post to LinkedIn on publish
+- [ ] Generate share image per post (`@vercel/og`)
+
+---
+
+## Tech Decisions
 
 | Decision | Choice | Reason |
 |---|---|---|
-| Framework | Next.js 15 App Router | ISR, RSC, easy Vercel deploy |
-| DB | PostgreSQL (Neon) | Array columns for tags/keywords, full-text search |
+| Framework | Next.js 15 App Router | ISR, RSC, Vercel one-click deploy |
+| DB | PostgreSQL (Neon) | Arrays for tags/keywords, full-text search path |
 | ORM | Drizzle | Lightweight, type-safe, great migration story |
-| Content | MDX via next-mdx-remote | Rich components in AI-generated markdown |
-| Styling | Tailwind v4 | Dark-mode-first, zero JS |
-| AI | Claude (Anthropic) | Best-in-class long-form writing |
-| Automation | n8n → native pipelines | Start external, move in-house as scope grows |
+| Content | MDX via `next-mdx-remote` | AI output renders rich components cleanly |
+| Styling | Tailwind v4 | Dark-first, zero JS |
+| AI Writer | Claude `claude-sonnet-4-6` | Best-in-class technical long-form |
+| Email | Resend | Developer-friendly, generous free tier |
+| OG Images | `@vercel/og` | Zero-dependency, edge-rendered |
+| Auth (admin) | TBD — better-auth or Clerk |  |
+
+---
+
+## Content Types That Win for Dev Tools
+
+Ordered by conversion rate (source: developer SEO research):
+
+1. **Comparison posts** — "X vs Y" captures bottom-funnel, high-intent traffic
+2. **Use-case posts** — "How [persona] uses [tool]" — broad top-of-funnel
+3. **Tutorial posts** — drives signups when the tutorial is about your tool specifically
+4. **Changelog posts** — keep existing users and show velocity to prospects
+5. **Integration posts** — captures search traffic from adjacent tools' user bases
 
 ---
 
 ## Contributing
 
-Start with Phase 1 tasks. Each item is independently shippable — pick one, open a PR.
+Start with any unchecked Phase 1 item — each is independently shippable.
+
+1. Fork + clone
+2. `cp .env.example .env` — fill in a Neon free-tier `DATABASE_URL`
+3. `bun run db:migrate && bun run dev`
+4. Pick a task, open a PR against `main`
