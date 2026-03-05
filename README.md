@@ -51,33 +51,80 @@ SEO metadata + structured data + llms.txt
 
 ---
 
-## Quick Start
+## Integration
+
+Pick the path that matches your stack.
+
+### Option A — Add to an existing Next.js project
+
+Run this from your project root:
 
 ```bash
-# 1. Clone & install
-git clone https://github.com/your-username/auto-blog
+npx auto-blog@latest init
+```
+
+The CLI will:
+- Detect your project layout (`src/` or not) and package manager
+- Copy blog routes, schema, utilities, and a `BlogHeader` stub into your project
+- Install missing dependencies
+- Warn about any conflicts (Tailwind version, Drizzle setup, etc.)
+- Print the exact next steps
+
+**`BlogHeader` is your integration seam.** It's a minimal header component the blog pages import. Replace its contents with your existing navbar in seconds — no other files need to change:
+
+```tsx
+// src/components/BlogHeader.tsx — swap in your own navbar here
+import YourNavbar from "@/components/YourNavbar";
+
+export default function BlogHeader({ items }: { items: { href: string; label: string }[] }) {
+  return <YourNavbar links={items} />;
+}
+```
+
+---
+
+### Option B — Deploy standalone, same domain (any stack)
+
+Deploy auto-blog as a separate service, then proxy `/blog` from your main domain so SEO authority stays on one domain.
+
+**Vercel** (one config file in your main app):
+```json
+// vercel.json
+{
+  "rewrites": [
+    { "source": "/blog/:path*", "destination": "https://YOUR-AUTO-BLOG.vercel.app/blog/:path*" },
+    { "source": "/api/blog",    "destination": "https://YOUR-AUTO-BLOG.vercel.app/api/blog" }
+  ]
+}
+```
+
+**Nginx / Caddy / Docker** — copy-paste configs in [`examples/`](./examples/).
+
+---
+
+### Option C — Subdomain (`blog.yourproject.com`)
+
+Deploy auto-blog standalone and point a DNS record at it. Lowest effort, slightly worse for SEO than a subdirectory.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/bhavishyasahdev/auto-blog)
+
+Set `DATABASE_URL` (Neon free tier works) and you're live in under 5 minutes.
+
+---
+
+### Local dev (standalone)
+
+```bash
+git clone https://github.com/bhavishyasahdev/auto-blog
 cd auto-blog
-bun install   # or: npm install / pnpm install
-
-# 2. Configure
-cp .env.example .env
-# Fill in DATABASE_URL, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_SITE_NAME
-
-# 3. Push schema
+bun install          # or: npm install / pnpm install
+cp .env.example .env # fill in DATABASE_URL + DATABASE_SSL=false for local postgres
 bun run db:generate
 bun run db:migrate
-
-# 4. Dev server
 bun run dev
 ```
 
 Visit `http://localhost:3000` → `/blog`
-
-**One-click deploy:**
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/auto-blog)
-
-Set `DATABASE_URL` (Neon free tier works) and you're live.
 
 ---
 
@@ -182,9 +229,10 @@ Output format:
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `NEXT_PUBLIC_SITE_URL` | Yes | Your deployed URL (used in RSS, sitemap, OG) |
+| `DATABASE_SSL` | No | `false` for local postgres, `true` for hosted (Neon etc). Auto-detects from `NODE_ENV` if unset. |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Your deployed URL (used in RSS, sitemap, OG, llms.txt) |
 | `NEXT_PUBLIC_SITE_NAME` | No | Blog name in UI (default: `Auto Blog`) |
-| `WEBHOOK_SECRET` | No | Validates `x-webhook-secret` header |
+| `WEBHOOK_SECRET` | No | If set, `POST /api/blog` requires `x-webhook-secret` header |
 
 ---
 

@@ -8,7 +8,7 @@ import { ComponentPropsWithoutRef, ReactNode } from "react";
 import { checkImageExists } from "@/lib/utils";
 import { generateBlogPostMetadata, sanitizeMDXContent } from "@/lib/blogUtils";
 import { Metadata } from "next";
-import Navbar from "@/components/Navbar";
+import BlogHeader from "@/components/BlogHeader";
 
 interface PageParams {
   params: Promise<{ slug: string }>;
@@ -253,7 +253,7 @@ export default async function BlogPostPage({ params }: PageParams) {
         <div className="absolute bottom-40 right-20 w-48 h-48 bg-gray-400/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <Navbar items={navItems} />
+      <BlogHeader items={navItems} />
 
       <article className="relative">
         <header className="relative container mx-auto pt-20 pb-12 px-4 sm:px-6 lg:px-8">

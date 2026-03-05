@@ -1,7 +1,14 @@
 {
   "name": "auto-blog",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "bin": {
+    "auto-blog": "./bin/init.mjs"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

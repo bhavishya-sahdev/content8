@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar";
+import BlogHeader from "@/components/BlogHeader";
 import { db } from "@/db";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -50,7 +50,7 @@ export default async function BlogPage() {
         <div className="absolute bottom-40 right-20 w-48 h-48 bg-gray-400/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <Navbar items={navItems} />
+      <BlogHeader items={navItems} />
 
       {/* Hero */}
       <section className="relative container mx-auto pt-20 pb-12 px-4 sm:px-6 lg:px-8">

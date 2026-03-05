@@ -1,0 +1,21 @@
+services:
+  auto-blog:
+    image: ghcr.io/bhavishyasahdev/auto-blog:latest
+    # Or build locally:
+    # build:
+    #   context: ../..
+    #   dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_SSL: "true"
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+    ports:
+      - "3001:3000"   # auto-blog on host port 3001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/blog"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
