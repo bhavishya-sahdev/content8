@@ -1,0 +1,13 @@
+{
+  "data": {
+    "meta": {
+      "title": "Your first article with content8",
+      "description": "Publish an article, then update it at the same URL.",
+      "category": "Getting started",
+      "slug": "hello-content8",
+      "author": "Content8",
+      "tags": ["publishing"]
+    },
+    "content": "## It works\n\nThis article arrived through the publishing webhook.\n\n## Make a correction\n\nEdit this text in examples/first-post.json and send the request again. The article updates at the same URL without creating a duplicate."
+  }
+}

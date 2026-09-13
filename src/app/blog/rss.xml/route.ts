@@ -1,7 +1,7 @@
 import RSS from "rss";
 import { db } from "@/db";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Content8";
@@ -54,7 +54,7 @@ export async function GET() {
     return new Response(feed.xml({ indent: true }), {
       headers: {
         "Content-Type": "application/rss+xml; charset=utf-8",
-        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        "Cache-Control": "no-cache",
       },
     });
   } catch (error) {

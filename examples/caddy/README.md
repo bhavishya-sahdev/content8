@@ -16,4 +16,8 @@ Caddy will obtain and renew TLS certificates automatically.
 
 ## With Docker Compose
 
-See [`../docker/docker-compose.yml`](../docker/docker-compose.yml) for a complete stack example including Caddy.
+See [`../docker/docker-compose.yml`](../docker/docker-compose.yml) to build the content8 service. Run Caddy separately on a network that can reach it.
+
+## Asset routing
+
+These examples reserve `/_next/*` for content8. If your main app is also Next.js, use the embedded CLI integration or a dedicated blog subdomain instead to avoid asset collisions. Set the production database and public site environment variables and run migrations before publishing.

@@ -24,3 +24,7 @@ certbot --nginx -d yourproject.com
 ```
 
 Certbot will modify the config to add SSL automatically.
+
+## Asset routing
+
+These examples reserve `/_next/*` for content8. If your main app is also Next.js, use the embedded CLI integration or a dedicated blog subdomain instead to avoid asset collisions. Set the production database and public site environment variables and run migrations before publishing.

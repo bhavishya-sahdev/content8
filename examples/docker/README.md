@@ -1,58 +1,21 @@
 # Docker
 
-Run content8 as a standalone container alongside your existing stack.
+From the repository root, create `.env` from `.env.example`. Set the PostgreSQL URL, SSL setting, public site origin/name, and publishing secret. The database must be reachable from the container (`localhost` inside a container is not your host).
 
-## Standalone (any stack)
-
-```bash
-# 1. Create .env
-cat > .env <<EOF
-DATABASE_URL=postgresql://user:password@your-db-host/dbname?sslmode=require
-DATABASE_SSL=true
-NEXT_PUBLIC_SITE_URL=https://blog.yourproject.com
-NEXT_PUBLIC_SITE_NAME=Your Blog
-WEBHOOK_SECRET=your-secret-here
-EOF
-
-# 2. Run
-docker compose up -d
-```
-
-content8 is now at `http://localhost:3001`.
-
-## With your existing docker-compose
-
-Add the `content8` service to your existing `docker-compose.yml`:
-
-```yaml
-services:
-  # ... your existing services ...
-
-  content8:
-    image: ghcr.io/bhavishyasahdev/content8:latest
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      DATABASE_SSL: "true"
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
-      NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME}
-      WEBHOOK_SECRET: ${WEBHOOK_SECRET}
-```
-
-Then add `/blog` routing in your nginx or Caddy config — see [`../nginx/`](../nginx/) or [`../caddy/`](../caddy/).
-
-## Building locally
+Prepare the database using the local development tools:
 
 ```bash
-docker build -t content8 .
-docker run -p 3001:3000 --env-file .env content8
+bun install --frozen-lockfile
+bun run db:generate
+bun run db:migrate
 ```
 
-## Subdomain vs subdirectory
+Build and start the included image:
 
-| Setup                                 | SEO impact                          | Effort                  |
-| ------------------------------------- | ----------------------------------- | ----------------------- |
-| `blog.yourproject.com` (subdomain)    | Separate domain authority           | Lowest — just point DNS |
-| `yourproject.com/blog` (subdirectory) | Shares your main domain authority ✓ | Add nginx/Caddy proxy   |
+```bash
+docker compose --env-file .env -f examples/docker/docker-compose.yml up --build -d
+```
 
-For SEO, **subdirectory is better**. Use the nginx or Caddy examples to proxy `/blog` from your main domain to the content8 container.
+Visit `http://localhost:3001/blog`. Send the sample request from the main README to port 3001 to publish your first article. Set `NEXT_PUBLIC_SITE_URL` to your externally reachable origin. Rebuild after changing the public origin or name because Next.js embeds public environment values at build time.
+
+This configuration uses an existing PostgreSQL database and a locally built image. Use an HTTPS reverse proxy for public deployments.

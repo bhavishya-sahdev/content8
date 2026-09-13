@@ -77,9 +77,14 @@ function run(cmd, cwd) {
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 async function main() {
+  const args = process.argv.slice(2);
+  if (args.some((arg) => !["init", "--yes", "--skip-install"].includes(arg))) {
+    console.error("Usage: content8 init [--yes] [--skip-install]");
+    process.exit(1);
+  }
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   const ask = (q, def) =>
-    rl.question(`  ${c.blue}?${c.reset}  ${q} ${c.dim}(${def})${c.reset} `);
+    args.includes("--yes") ? Promise.resolve("") : rl.question(`  ${c.blue}?${c.reset}  ${q} ${c.dim}(${def})${c.reset} `);
 
   const cwd = process.cwd();
   // content8's own src/ directory (works both locally and via npx)
@@ -94,16 +99,14 @@ async function main() {
     rl.close(); process.exit(1);
   }
 
-  const isNext = existsSync(join(cwd, "next.config.ts"))
-    || existsSync(join(cwd, "next.config.js"))
-    || existsSync(join(cwd, "next.config.mjs"));
+  const isNext = hasDep(pkg, "next");
 
   if (!isNext) {
-    log.warn("No Next.js config detected.\n");
+    log.warn("No Next.js dependency detected.\n");
     console.log(`  content8 requires Next.js for the embedded integration.`);
     console.log(`  For other stacks, deploy content8 as a standalone service and`);
     console.log(`  proxy ${c.cyan}/blog${c.reset} using one of the configs in ${c.cyan}examples/${c.reset}:`);
-    console.log(`  ${c.gray}https://github.com/bhavishyasahdev/content8/tree/main/examples${c.reset}\n`);
+    console.log(`  ${c.gray}https://github.com/bhavishya-sahdev/content8/tree/main/examples${c.reset}\n`);
     rl.close(); process.exit(0);
   }
 
@@ -114,6 +117,10 @@ async function main() {
   const compBase = hasSrc ? join(cwd, "src", "components") : join(cwd, "components");
   const dbBase   = hasSrc ? join(cwd, "src", "db")         : join(cwd, "db");
 
+  if (!existsSync(appBase)) {
+    log.warn("The embedded integration requires an existing Next.js App Router app/ directory.");
+    rl.close(); process.exit(1);
+  }
   const pm           = detectPm(cwd);
   const hasDrizzle   = hasDep(pkg, "drizzle-orm");
   const hasPg        = hasDep(pkg, "pg");
@@ -179,13 +186,16 @@ async function main() {
   safeCopy(join(pkgSrc, "app/blog/rss.xml/route.ts"),    join(appBase, "blog/rss.xml/route.ts"),        "app/blog/rss.xml/route.ts");
   safeCopy(join(pkgSrc, "app/blog/sitemap.ts"),          join(appBase, "blog/sitemap.ts"),              "app/blog/sitemap.ts");
 
+  // Blog-specific helpers are separate from the host application's utilities.
+  safeCopy(join(pkgSrc, "lib/blogImages.ts"), join(libBase, "blogImages.ts"), "lib/blogImages.ts");
+  safeCopy(join(pkgSrc, "lib/blogPayload.ts"), join(libBase, "blogPayload.ts"), "lib/blogPayload.ts");
   // Lib
   safeCopy(join(pkgSrc, "lib/blogUtils.ts"),             join(libBase, "blogUtils.ts"),                 "lib/blogUtils.ts");
   if (!existsSync(join(libBase, "utils.ts"))) {
     safeCopy(join(pkgSrc, "lib/utils.ts"),               join(libBase, "utils.ts"),                     "lib/utils.ts");
   } else {
     log.skip("lib/utils.ts — already exists");
-    log.info("Make sure it exports cn() and checkImageExists() — see lib/utils.ts in the content8 repo.");
+    log.info("If using the full Navbar, your utils.ts must export cn(). The minimal blog header does not need it.");
   }
 
   // Header
@@ -219,13 +229,19 @@ async function main() {
     "class-variance-authority", "clsx", "lucide-react", "tailwind-merge",
   ];
   const devDeps = [
-    "drizzle-kit", "@types/pg", "@types/rss", "@types/react-syntax-highlighter",
+    "drizzle-kit", "@next/env", "@types/pg", "@types/rss", "@types/react-syntax-highlighter",
   ];
 
-  const missingDeps    = deps.filter((d)    => !hasDep(pkg, d));
-  const missingDevDeps = devDeps.filter((d) => !hasDep(pkg, d));
+  const sourcePkg = readPkg(join(__dirname, ".."));
+  const versioned = (name) => `${name}@${sourcePkg.dependencies?.[name] || sourcePkg.devDependencies?.[name]}`;
+  const missingDeps = deps.filter((d) => !hasDep(pkg, d)).map(versioned);
+  const missingDevDeps = devDeps.filter((d) => !hasDep(pkg, d)).map(versioned);
 
-  if (!missingDeps.length && !missingDevDeps.length) {
+  if (args.includes("--skip-install")) {
+    log.warn("Dependency installation skipped. Install these before running the app:");
+    log.code(missingDeps.join(" "));
+    log.code(missingDevDeps.join(" "));
+  } else if (!missingDeps.length && !missingDevDeps.length) {
     log.ok("All dependencies already installed.");
   } else {
     const add  = pm === "npm" ? "install" : "add";
@@ -257,11 +273,36 @@ async function main() {
     log.ok("next.config already includes next-mdx-remote.");
   }
 
+  if (!nextCfgContent.includes("serverExternalPackages")) {
+    log.info("For Node.js syntax highlighting, add serverExternalPackages to your next.config:");
+    log.code("serverExternalPackages: ['react-syntax-highlighter', 'prismjs'],");
+  }
+  log.info(`Blog imports require @/* to resolve to ${hasSrc ? "./src/*" : "./*"} in tsconfig.json.`);
+  log.info("The host app must have Tailwind CSS configured and its global stylesheet imported.");
+  log.info("If syntax highlighting fails on Node 22+, see src/instrumentation.ts in content8.");
+
   // ── drizzle.config check ─────────────────────────────────────────────────
   if (!existsSync(join(cwd, "drizzle.config.ts")) && !existsSync(join(cwd, "drizzle.config.js"))) {
-    log.warn("No drizzle.config found. Copy from content8 or create your own:");
-    log.code("https://github.com/bhavishyasahdev/content8/blob/main/drizzle.config.ts");
+    const config = `import { loadEnvConfig } from "@next/env";
+import { defineConfig } from "drizzle-kit";
+loadEnvConfig(process.cwd());
+export default defineConfig({
+  dialect: "postgresql",
+  schema: "./${hasSrc ? "src/" : ""}db/schema",
+  out: "./drizzle",
+  dbCredentials: { url: process.env.DATABASE_URL || "" },
+});
+`;
+    writeFileSync(join(cwd, "drizzle.config.ts"), config);
+    log.ok("drizzle.config.ts (loads .env automatically)");
   }
+
+  // Re-read package.json so dependency installation is preserved.
+  const updatedPkg = readPkg(cwd);
+  updatedPkg.scripts ??= {};
+  updatedPkg.scripts["db:generate"] ??= "drizzle-kit generate";
+  updatedPkg.scripts["db:migrate"] ??= "drizzle-kit migrate";
+  writeFileSync(join(cwd, "package.json"), JSON.stringify(updatedPkg, null, 2) + "\n");
 
   // ── Final instructions ────────────────────────────────────────────────────
   section("Done! Next steps:\n");
@@ -276,7 +317,7 @@ async function main() {
   console.log(`\n  ${c.bold}2. Run database migration:${c.reset}`);
   log.code(`${pm} run db:generate`);
   log.code(`${pm} run db:migrate`);
-  log.code("(Add these scripts to package.json if not present)");
+  log.info("Existing database configuration and scripts are preserved; verify they include the posts schema.");
 
   if (hasExistingHeader || headerMode === "blog-header") {
     console.log(`\n  ${c.bold}3. Plug in your header:${c.reset}`);
@@ -291,7 +332,7 @@ async function main() {
   log.code("  -d '{\"data\":{\"meta\":{\"title\":\"Hello\",\"description\":\"Test\",\"category\":\"Test\",\"slug\":\"hello\",\"tags\":[],\"keywords\":[]},\"content\":\"# Hello\\n\\nThis works.\"}}'");
 
   console.log(`\n  ${c.bold}5. Visit /blog${c.reset}`);
-  console.log(`\n  ${c.dim}Full docs: https://github.com/bhavishyasahdev/content8${c.reset}\n`);
+  console.log(`\n  ${c.dim}Full docs: https://github.com/bhavishya-sahdev/content8${c.reset}\n`);
 }
 
 function section(msg) {

@@ -27,7 +27,7 @@ export function generateBlogPostMetadata({
 }: BlogPostMetaProps): Metadata {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const postUrl = `${baseUrl}/blog/${slug}`;
-  const imageUrl = featuredImage || `${baseUrl}/og-default.jpg`;
+  const imageUrl = featuredImage || undefined;
 
   const metaDescription =
     description ||
@@ -38,6 +38,7 @@ export function generateBlogPostMetadata({
   return {
     title: `${title} | ${process.env.NEXT_PUBLIC_SITE_NAME || "Content8"}`,
     description: metaDescription,
+    alternates: { canonical: postUrl },
     keywords: [...tags, "blog", "technical", "programming"],
     authors: [{ name: author }],
     openGraph: {
@@ -45,7 +46,7 @@ export function generateBlogPostMetadata({
       description: metaDescription,
       url: postUrl,
       siteName: process.env.NEXT_PUBLIC_SITE_NAME || "Content8",
-      images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : undefined,
       type: "article",
       publishedTime: publishedAt,
       modifiedTime: updatedAt || publishedAt,
@@ -56,7 +57,7 @@ export function generateBlogPostMetadata({
       card: "summary_large_image",
       title,
       description: metaDescription,
-      images: [imageUrl],
+      images: imageUrl ? [imageUrl] : undefined,
     },
     robots: {
       index: true,
@@ -99,7 +100,7 @@ export function generateBlogPostJsonLd({
     "@type": "BlogPosting",
     headline: title,
     description,
-    image: featuredImage || `${baseUrl}/og-default.jpg`,
+    image: featuredImage || undefined,
     datePublished: publishedAt,
     dateModified: updatedAt || publishedAt,
     author: {

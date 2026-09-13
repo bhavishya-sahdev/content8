@@ -1,35 +1,11 @@
-# Integration Examples
+# Integration examples
 
-Pick the path that matches your stack.
+For an existing Next.js App Router project, use the local CLI described in the [main README](../README.md). This shares the host app's navigation and assets.
 
-## Which integration should I use?
+For another stack, deploy content8 separately:
 
-```
-Do you have an existing Next.js project?
-├── YES → npx content8@latest init         (copies routes into your project)
-└── NO  → Deploy content8 standalone, then:
-          ├── Hosted on Vercel?  → examples/vercel/
-          ├── Self-hosted?
-          │   ├── Using Caddy?   → examples/caddy/    (easiest, auto-HTTPS)
-          │   └── Using Nginx?   → examples/nginx/
-          └── Docker?            → examples/docker/
-```
+- [Docker](docker/): build and run the included container with an existing PostgreSQL database.
+- [Vercel](vercel/): example reverse-proxy rewrites.
+- [Nginx](nginx/) and [Caddy](caddy/): example proxy configurations.
 
-## Subdomain vs Subdirectory
-
-|                    | `blog.yourproject.com`    | `yourproject.com/blog`    |
-| ------------------ | ------------------------- | ------------------------- |
-| **Setup effort**   | Low — just DNS            | Slightly more — add proxy |
-| **SEO**            | Separate domain authority | Shares your main domain ✓ |
-| **Recommendation** | Fine for starters         | Better for SEO long-term  |
-
-For maximum SEO benefit, use the **subdirectory** approach with a reverse proxy (nginx, Caddy, or Vercel rewrites).
-
-## Folders
-
-| Folder               | When to use                                      |
-| -------------------- | ------------------------------------------------ |
-| [`vercel/`](vercel/) | Main app on Vercel — one-line rewrite config     |
-| [`nginx/`](nginx/)   | Self-hosted with nginx                           |
-| [`caddy/`](caddy/)   | Self-hosted with Caddy (auto-HTTPS, recommended) |
-| [`docker/`](docker/) | Running content8 as a Docker container           |
+A dedicated subdomain is the simplest standalone setup. A `/blog` proxy needs to route the blog's Next.js assets as well as its page and webhook requests. The included proxy configs reserve `/_next/*` for content8, so use the embedded integration if the main app is also Next.js. Set `NEXT_PUBLIC_SITE_URL` to the public origin readers use. Neither deployment arrangement guarantees search rankings.

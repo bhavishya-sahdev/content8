@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { MetadataRoute } from "next";
 
+export const dynamic = "force-dynamic";
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 async function getAllBlogPosts() {

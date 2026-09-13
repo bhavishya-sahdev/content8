@@ -8,6 +8,11 @@ yourproject.com {
         reverse_proxy content8:3000
     }
 
+    # Static assets. Use the embedded integration for a Next.js main app.
+    handle /_next/* {
+        reverse_proxy content8:3000
+    }
+
     # Everything else goes to your main app
     handle {
         reverse_proxy main-app:3000

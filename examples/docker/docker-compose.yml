@@ -1,21 +1,16 @@
 services:
   content8:
-    image: ghcr.io/bhavishyasahdev/content8:latest
-    # Or build locally:
-    # build:
-    #   context: ../..
-    #   dockerfile: Dockerfile
+    build:
+      context: ../..
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?Set your public origin}
+        NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Content8}
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      DATABASE_SSL: "true"
+      DATABASE_URL: ${DATABASE_URL:?Set your PostgreSQL connection string}
+      DATABASE_SSL: ${DATABASE_SSL:-true}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
-      NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME}
-      WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+      NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Content8}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?Set a publishing secret}
     ports:
-      - "3001:3000"   # content8 on host port 3001
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/blog"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - "3001:3000"

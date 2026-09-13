@@ -1,311 +1,157 @@
 # content8
 
-**Self-hosted content engine that turns your project into a discovery magnet.**
+**Publish from n8n to your Next.js blog, on your own domain.**
 
-You built something great. Nobody found it.
+Content8 is a self-hosted publishing endpoint and blog. Send an article from n8n, a script, or another workflow; content8 stores it in PostgreSQL and renders it at `/blog/[slug]` with canonical URLs, social metadata, JSON-LD, a sitemap, and RSS.
 
-`content8` is an open-source, webhook-driven blog engine built for developers who want organic traffic and AI discoverability for their projects — without becoming content marketers. Hook it up to an n8n workflow or any AI pipeline, and it auto-publishes SEO-optimized articles _about your project_: tutorials, comparisons, use cases, changelogs. It also generates an `llms.txt` so AI assistants like Perplexity, ChatGPT, and Claude can discover and recommend your work.
+It is for developers who already have a content workflow and want to own their publishing layer. You bring the articles and editorial review. Content8 does not generate articles, select keywords, or guarantee traffic or AI recommendations.
 
----
+## Get your first article online locally
 
-## Why
-
-- Comparison posts, use-case articles, and tutorials drive **3–5× more conversions** than generic content
-- AI Overviews appear in ~16% of searches — your content needs structured data to survive this
-- Perplexity, ChatGPT, and Claude surface tools they've "read about" — `llms.txt` puts your project in that pool
-- Writing one good article takes 4–8 hours. This takes a webhook call.
-
----
-
-## How it works
-
-```
-Your project context (README, docs, changelog)
-      ↓
-n8n / any AI pipeline (or write your own)
-      ↓
-Claude / GPT-4 generates: tutorial, comparison, use-case, changelog post
-      ↓
-POST /api/blog  ← webhook
-      ↓
-PostgreSQL → MDX render → /blog/[slug]
-      ↓
-SEO metadata + structured data + llms.txt
-```
-
----
-
-## Features
-
-|                        |                                                            |
-| ---------------------- | ---------------------------------------------------------- |
-| **Webhook-driven**     | POST from n8n, Make, Zapier, or your own cron              |
-| **MDX rendering**      | Full component support — callouts, code blocks, tables     |
-| **SEO-ready**          | Open Graph, Twitter cards, JSON-LD, XML sitemap            |
-| **AI-discoverability** | `/llms.txt` and `/llms-full.txt` generated from your posts |
-| **RSS feed**           | `/blog/rss.xml` — last 50 posts, 1h cache                  |
-| **Related posts**      | Auto-linked by category                                    |
-| **Duplicate-safe**     | Slug-based deduplication with `onConflictDoNothing`        |
-| **Secret validation**  | HMAC webhook secret support                                |
-| **ISR**                | 1h revalidation — fast static pages, always fresh          |
-
----
-
-## Integration
-
-Pick the path that matches your stack.
-
-### Option A — Add to an existing Next.js project
-
-Run this from your project root:
+Requires Node.js 22, Bun, and a new PostgreSQL database. Have your database connection URL ready; setup does not provision a database or create a provider account.
 
 ```bash
-npx content8@latest init
-```
-
-The CLI will:
-
-- Detect your project layout (`src/` or not) and package manager
-- Copy blog routes, schema, utilities, and a `BlogHeader` stub into your project
-- Install missing dependencies
-- Warn about any conflicts (Tailwind version, Drizzle setup, etc.)
-- Print the exact next steps
-
-**`BlogHeader` is your integration seam.** It's a minimal header component the blog pages import. Replace its contents with your existing navbar in seconds — no other files need to change:
-
-```tsx
-// src/components/BlogHeader.tsx — swap in your own navbar here
-import YourNavbar from "@/components/YourNavbar";
-
-export default function BlogHeader({
-  items,
-}: {
-  items: { href: string; label: string }[];
-}) {
-  return <YourNavbar links={items} />;
-}
-```
-
----
-
-### Option B — Deploy standalone, same domain (any stack)
-
-Deploy content8 as a separate service, then proxy `/blog` from your main domain so SEO authority stays on one domain.
-
-**Vercel** (one config file in your main app):
-
-```json
-// vercel.json
-{
-  "rewrites": [
-    {
-      "source": "/blog/:path*",
-      "destination": "https://YOUR-AUTO-BLOG.vercel.app/blog/:path*"
-    },
-    {
-      "source": "/api/blog",
-      "destination": "https://YOUR-AUTO-BLOG.vercel.app/api/blog"
-    }
-  ]
-}
-```
-
-**Nginx / Caddy / Docker** — copy-paste configs in [`examples/`](./examples/).
-
----
-
-### Option C — Subdomain (`blog.yourproject.com`)
-
-Deploy content8 standalone and point a DNS record at it. Lowest effort, slightly worse for SEO than a subdirectory.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/bhavishyasahdev/content8)
-
-Set `DATABASE_URL` (Neon free tier works) and you're live in under 5 minutes.
-
----
-
-### Local dev (standalone)
-
-```bash
-git clone https://github.com/bhavishyasahdev/content8
+git clone https://github.com/bhavishya-sahdev/content8.git
 cd content8
-bun install          # or: npm install / pnpm install
-cp .env.example .env # fill in DATABASE_URL + DATABASE_SSL=false for local postgres
-bun run db:generate
-bun run db:migrate
+bun install --frozen-lockfile
+bun run setup
 bun run dev
 ```
 
-Visit `http://localhost:3000` → `/blog`
+Setup asks for your database URL, blog name, and site origin (default: `http://localhost:3000`). It then:
 
----
+1. Saves `.env` and generates a publishing secret.
+2. Checks the database connection and applies the included migrations.
+3. Creates a sample article if the blog is empty and prints the URL to open.
 
-## Webhook API
+There is no manual environment-file editing, migration generation, or curl request needed for the first article. Existing configuration is reused, and existing articles are left alone. If a connection fails, fix the saved settings and rerun `bun run setup`.
 
-### Publish a post
+For automated setup, provide `DATABASE_URL` in your environment and run `bun run setup --yes`. Local databases default to no TLS; remote databases default to TLS. An explicit `DATABASE_SSL` setting takes precedence.
 
-```bash
-curl -X POST https://your-blog.com/api/blog \
-  -H "Content-Type: application/json" \
-  -H "x-webhook-secret: your-secret" \
-  -d '{
-    "data": {
-      "meta": {
-        "title": "How to use MyTool for database migrations",
-        "description": "A step-by-step guide to running zero-downtime migrations with MyTool.",
-        "category": "Tutorials",
-        "slug": "mytool-database-migrations",
-        "tags": ["postgres", "migrations", "devops"],
-        "keywords": ["database migration tool", "zero-downtime migrations", "mytool guide"],
-        "featuredImage": "https://example.com/og.jpg"
-      },
-      "content": "# How to use MyTool for database migrations\n\n..."
-    }
-  }'
-```
+### Publish your own article
 
-**Content types that perform best:**
-
-- `"category": "Comparisons"` — "MyTool vs X", "Best tools for Y"
-- `"category": "Tutorials"` — "How to do X with MyTool"
-- `"category": "Use Cases"` — "How [company type] uses MyTool"
-- `"category": "Changelog"` — "What's new in v2.0"
-
-### Get latest posts
+With the server running, edit [examples/first-post.json](examples/first-post.json), then run:
 
 ```bash
-GET /api/blog
-# Returns last 10 posts (no content body)
+bun run publish -- examples/first-post.json
 ```
 
----
+The command validates the file, reads your secret from the environment, and prints the published URL. Keep the slug to update an article; change it to create another. It targets localhost by default, even if your configured site origin is a production URL.
 
-## AI Discoverability
+To publish to a deployed server, use its matching `WEBHOOK_SECRET` and an explicit HTTPS origin:
 
-Once deployed, your project gets:
-
-**`/llms.txt`** _(coming in v0.2)_
-
-```
-# MyTool
-
-> Zero-downtime database migration tool for PostgreSQL.
-
-## Documentation
-- [Getting started](/blog/getting-started)
-- [How it works](/blog/how-it-works)
-
-## Tutorials
-- [Zero-downtime migrations](/blog/mytool-database-migrations)
-- [MyTool vs Flyway](/blog/mytool-vs-flyway)
+```bash
+bun run publish -- examples/first-post.json --url https://blog.example.com
 ```
 
-This file is consumed by AI assistants that want to understand what your project does, so they can recommend it when users ask relevant questions.
+Both commands support `--help`. You can still configure `.env` manually using [.env.example](.env.example), run `bun run db:migrate`, and call the webhook directly.
 
----
+## How publishing works
 
-## n8n Setup
-
-In your n8n workflow, set the **HTTP Request** node to:
-
-| Field  | Value                                  |
-| ------ | -------------------------------------- |
-| Method | `POST`                                 |
-| URL    | `https://your-blog.com/api/blog`       |
-| Header | `x-webhook-secret: your-secret`        |
-| Body   | JSON matching the payload schema above |
-
-Pass your project's README, docs, or changelog as context to the AI agent. The agent should generate content _about your project_ — not generic content.
-
-**Prompt tip:**
-
+```text
+Your reviewed article → POST /api/blog → PostgreSQL → /blog/[slug]
+                                                   → /blog/sitemap.xml
+                                                   → /blog/rss.xml
 ```
-You are a technical content writer. Write a blog post about [YOUR PROJECT NAME].
 
-Context about the project:
-[paste README or relevant docs section]
+`POST /api/blog` creates or replaces an article by slug. Repeating a request never creates a second article with that slug. Updates preserve the ID and original publication date. This is a full replacement of the editable fields, not a partial patch; omitted optional fields reset to their defaults.
 
-Article type: [Tutorial / Comparison / Use Case / Changelog]
-Target keyword: [keyword you want to rank for]
-
-Output format:
+```json
 {
   "data": {
-    "meta": { ... },
-    "content": "# ..."
+    "meta": {
+      "title": "How to publish from n8n",
+      "description": "Send a reviewed article to your own Next.js blog.",
+      "category": "Tutorials",
+      "slug": "publish-from-n8n",
+      "author": "Your name",
+      "tags": ["n8n", "nextjs"],
+      "keywords": [],
+      "featuredImage": "https://your-site.com/article-image.jpg"
+    },
+    "content": "## Prerequisites\n\nStart with a reviewed article."
   }
 }
 ```
 
----
+Required: `title` (up to 256 characters), `description` (2,000), `category` (100), `slug` (200), and `content` (500,000). Slugs use lowercase letters, numbers, and single hyphens between words. The other fields are optional. Use headings starting at `##` in the body because the page renders the title as its main heading.
 
-## Environment Variables
+| Response | Meaning |
+| --- | --- |
+| `200` | Article saved; `data.path` contains the relative article URL |
+| `400` | Invalid JSON or fields; `error` explains the problem |
+| `401` | Missing or incorrect shared secret |
+| `503` | The server has no `WEBHOOK_SECRET` configured |
+| `500` | Saving failed; check database configuration and migrations |
 
-| Variable                | Required | Description                                                                                      |
-| ----------------------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `DATABASE_URL`          | Yes      | PostgreSQL connection string                                                                     |
-| `DATABASE_SSL`          | No       | `false` for local postgres, `true` for hosted (Neon etc). Auto-detects from `NODE_ENV` if unset. |
-| `NEXT_PUBLIC_SITE_URL`  | Yes      | Your deployed URL (used in RSS, sitemap, OG, llms.txt)                                           |
-| `NEXT_PUBLIC_SITE_NAME` | No       | Blog name in UI (default: `Content8`)                                                            |
-| `WEBHOOK_SECRET`        | No       | If set, `POST /api/blog` requires `x-webhook-secret` header                                      |
+The secret is sent in the `x-webhook-secret` header. This is shared-secret authentication, not HMAC signing. Use HTTPS outside local development. Only trusted editors or workflows should publish: the renderer supports MDX, which can execute JavaScript. Do not expose it as an untrusted user-content endpoint.
 
----
+`GET /api/blog` returns the latest ten articles without their content bodies.
 
-## Routes
+## Connect n8n
 
-| Route               | Description                                          |
-| ------------------- | ---------------------------------------------------- |
-| `/blog`             | Listing page — featured post + article grid          |
-| `/blog/[slug]`      | Post with MDX rendering, related posts, SEO metadata |
-| `/blog/rss.xml`     | RSS feed (last 50 posts)                             |
-| `/blog/sitemap.xml` | Dynamic XML sitemap                                  |
-| `/llms.txt`         | AI-discoverability file _(v0.2)_                     |
-| `POST /api/blog`    | Webhook endpoint — publishes a post                  |
-| `GET /api/blog`     | Returns latest 10 posts                              |
+After publishing the sample locally, add an **HTTP Request** node to your workflow:
 
----
+| Setting | Value |
+| --- | --- |
+| Method | `POST` |
+| URL | `https://your-site.com/api/blog` |
+| Authentication | Generic Credential Type → Header Auth |
+| Credential header | `x-webhook-secret` with your server's secret |
+| Send Body | On |
+| Body Content Type | JSON |
+| JSON body | `{{ $json }}` when the incoming item matches the payload above |
 
-## Database Schema
+Store the secret in n8n credentials. Review generated content before this node runs. Reuse the slug to publish corrections. Content8 currently has no built-in drafting, approval, scheduling, or deletion interface.
 
-```sql
-CREATE TABLE posts (
-  id             SERIAL PRIMARY KEY,
-  title          VARCHAR(256) NOT NULL,
-  description    VARCHAR NOT NULL,
-  slug           VARCHAR NOT NULL UNIQUE,
-  author         VARCHAR DEFAULT 'Author',
-  category       VARCHAR NOT NULL,
-  keywords       TEXT[] DEFAULT '{}',
-  tags           TEXT[] DEFAULT '{}',
-  content        TEXT NOT NULL,
-  featured_image VARCHAR,
-  published_at   TIMESTAMP DEFAULT NOW()
-);
+## Add to an existing Next.js app
+
+The embedded integration requires the App Router, TypeScript, PostgreSQL, and configured Tailwind CSS (the standalone app uses v4). Imports assume `@/*` points to `./src/*` or `./*`, matching your layout.
+
+From a local clone, run this inside your app:
+
+```bash
+node /absolute/path/to/content8/bin/init.mjs init
 ```
 
----
+The CLI copies blog routes and helpers, installs missing dependencies using content8's declared versions, creates a Drizzle config if absent, and adds missing migration scripts. Existing files and scripts are preserved. Review any reported conflicts before running your app.
 
-## Stack
+- If you already use Drizzle, ensure your database exports and schema match the copied imports.
+- Configure `.env`, generate and apply migrations, then publish the sample with the webhook payload below.
+- Replace `BlogHeader.tsx` with your navigation.
+- Ensure Tailwind is configured and loaded in your app's root layout.
+- Follow the CLI's Next.js configuration guidance for MDX and syntax highlighting.
 
-- **Next.js 15** App Router + TypeScript
-- **PostgreSQL** (Neon free tier supported) + Drizzle ORM
-- **Tailwind CSS v4** — dark mode first
-- **next-mdx-remote** — MDX rendering in RSC
-- **react-syntax-highlighter** — code block highlighting
+For scripted setup, `--yes` accepts defaults and `--skip-install` copies files without installing dependencies. Package publication is separate from cloning this repository; the local command above does not depend on an npm release.
 
----
+## Deploy
 
-## Contributing
+Run `bun run build` and `bun run start` on a Node.js host with the environment below. Generate and apply database migrations before serving articles. Build with your production `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_SITE_NAME` values.
 
-See [ROADMAP.md](./ROADMAP.md) for what's planned. Each item in Phase 1 is independently shippable.
+For a different frontend stack, deploy content8 separately and proxy `/blog/*` to it. See [Vercel](examples/vercel/README.md), [Nginx](examples/nginx/README.md), and [Caddy](examples/caddy/README.md) examples. Proxy `/_next/*` too when needed by your hosting arrangement; avoid collisions with another Next.js app's assets. A dedicated subdomain avoids that routing concern. Set the site URL to the public origin readers use.
 
-1. Fork & clone
-2. `cp .env.example .env` + fill in a Neon DB URL
-3. `bun run db:migrate && bun run dev`
-4. Pick a Phase 1 task, open a PR
+Docker instructions are in [examples/docker](examples/docker/README.md). The repository builds its own image; no prepublished container image is required.
 
----
+## Environment
 
-## License
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Required PostgreSQL connection string |
+| `DATABASE_SSL` | `false` for local PostgreSQL; `true` when TLS is required |
+| `NEXT_PUBLIC_SITE_URL` | Public origin used in canonical URLs, sitemap, RSS, and metadata |
+| `NEXT_PUBLIC_SITE_NAME` | Blog name; defaults to Content8 |
+| `WEBHOOK_SECRET` | Required for publishing; keep it on the server and in workflow credentials |
 
-MIT
+## Scope and development
+
+Implemented: publishing and replacement by slug, MDX rendering, related posts by category, metadata, JSON-LD, canonical URLs, sitemap, RSS, and the embedded installer.
+
+Not implemented: article generation, an importable generation/approval workflow, analytics, draft management, `llms.txt`, or `llms-full.txt`. Search performance depends on your content and distribution, not simply these metadata features.
+
+```bash
+bun test
+bun run typecheck
+bun run build
+```
+
+[MIT licensed](LICENSE). Contributions should include a reproducible example and relevant checks.

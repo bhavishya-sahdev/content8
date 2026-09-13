@@ -3,10 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { ComponentPropsWithoutRef, ReactNode } from "react";
-import { checkImageExists } from "@/lib/utils";
-import { generateBlogPostMetadata, sanitizeMDXContent } from "@/lib/blogUtils";
+import { checkImageExists } from "@/lib/blogImages";
+import { generateBlogPostMetadata, generateBlogPostJsonLd, sanitizeMDXContent } from "@/lib/blogUtils";
 import { Metadata } from "next";
 import BlogHeader from "@/components/BlogHeader";
 
@@ -240,6 +240,12 @@ export default async function BlogPostPage({ params }: PageParams) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <BlogHeader items={navItems} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateBlogPostJsonLd(post)).replace(/</g, "\\u003c"),
+        }}
+      />
 
       <article className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-3xl">
         {/* Breadcrumb */}

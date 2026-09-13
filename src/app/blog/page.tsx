@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 async function getBlogs() {
   try {
